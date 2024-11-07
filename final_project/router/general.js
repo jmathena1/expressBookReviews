@@ -1,4 +1,5 @@
 const express = require('express');
+const _ = require('lodash')
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
@@ -34,25 +35,61 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-    return res.status(300).json({ books });
+    let getAllBooks = new Promise((resolve, reject) => {
+        if (books) {
+            resolve(res.status(300).json({ books }));
+        } else {
+            reject(res.status(400).send("Book list not found"))
+        }
+    })
+    getAllBooks.catch(error => {
+        console.error(`Error getting all books: ${error}`);
+    })
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
     const filteredBook = Object.values(books).filter(book => book.isbn == req.params.isbn)
-    return res.status(300).json({books: filteredBook});
+    let getBooksByISBN = new Promise((resolve, reject) => {
+        if (filteredBook.length == 0 || filteredBook === undefined) {
+            reject(res.status(400).send(`Book ${req.params.isbn} not found`))
+        } else {
+            resolve(res.status(300).json({ filteredBook }));
+        }
+    })
+    getBooksByISBN.catch(error => {
+        console.error(`Error searching by ISBN: ${error}`);
+    })
  });
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
     const filteredBook = Object.values(books).filter(book => book.author == req.params.author)
-    return res.status(300).json({books: filteredBook});
+    let getBooksByAuthor = new Promise((resolve, reject) => {
+        if (filteredBook.length == 0 || filteredBook === undefined) {
+            reject(res.status(400).send(`Books by ${req.params.author} not found`))
+        } else {
+            resolve(res.status(300).json({ filteredBook }));
+        }
+    })
+    getBooksByAuthor.catch(error => {
+        console.error(`Error searching by author: ${error}`);
+    })
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
     const filteredBook = Object.values(books).filter(book => book.title == req.params.title)
-    return res.status(300).json({books: filteredBook});
+    let getBooksByTitle = new Promise((resolve, reject) => {
+        if (filteredBook.length == 0 || filteredBook === undefined) {
+            reject(res.status(400).send(`${req.params.title} not found`))
+        } else {
+            resolve(res.status(300).json({ filteredBook }));
+        }
+    })
+    getBooksByTitle.catch(error => {
+        console.error(`Error searching by title: ${error}`);
+    })
 });
 
 //  Get book review
